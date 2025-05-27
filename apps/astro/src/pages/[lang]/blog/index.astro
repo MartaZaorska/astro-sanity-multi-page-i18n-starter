@@ -10,7 +10,7 @@ export async function getStaticPaths(){
     params: { lang: DEFAULT_LANGUAGE }
   });
 
-  return languages.map(lang => ({ params: { lang }}));
+  return languages?.map(lang => ({ params: { lang }}));
 }
 
 const { lang } = Astro.params as { lang: Language }; 

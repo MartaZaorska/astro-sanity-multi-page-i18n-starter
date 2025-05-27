@@ -10,7 +10,7 @@ export async function getStaticPaths() {
     query: `*[defined(slug.current) && _type in ["Index_Page", "Service_Collection", "PrivacyPolicy_Page"] && slug.current != '/'][].slug.current`
   });
 
-  return slugs.map(slug => ({
+  return slugs?.map(slug => ({
     params: { localeAndSlug: slug === '/' ? undefined : slug.slice(1) }
   }));
 }

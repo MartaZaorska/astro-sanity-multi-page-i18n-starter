@@ -25,13 +25,13 @@ export async function getStaticPaths() {
     params: { lang: DEFAULT_LANGUAGE }
   });
 
-  const paginationSlugs = collection.pagination.filter(({ totalPosts }) => totalPosts > POSTS_PER_PAGE).flatMap(({ totalPosts, slug }) => {
+  const paginationSlugs = (collection?.pagination ?? []).filter(({ totalPosts }) => totalPosts > POSTS_PER_PAGE).flatMap(({ totalPosts, slug }) => {
     const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
     const { page } = useTranslations(DEFAULT_LANGUAGE)('urlParts');
     return Array.from({ length: totalPages - 1 }, (_, i) => `${slug}/${page}/${i + 2}`);
   });
 
-  return [...collection.slugs, ...paginationSlugs].map(slug => ({
+  return [...(collection?.slugs ?? []), ...paginationSlugs].map(slug => ({
     params: { slug: slug.replace('/blog/', '') }
   }));
 }
