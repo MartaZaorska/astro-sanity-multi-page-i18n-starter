@@ -9,7 +9,7 @@ export async function getStaticPaths(){
     query: `*[_type == "NotFound_Page" && defined(slug.current)].language`,
   });
 
-  return languages.map(lang => ({ params: { lang }}));
+  return languages?.map(lang => ({ params: { lang }}));
 }
 
 const { lang } = Astro.params as { lang: Language };

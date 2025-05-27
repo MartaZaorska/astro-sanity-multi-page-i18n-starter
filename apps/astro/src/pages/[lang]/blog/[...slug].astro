@@ -31,14 +31,14 @@ export async function getStaticPaths() {
     `
   });
 
-  const pagination = collection.pagination.filter(({ totalPosts }) => totalPosts > POSTS_PER_PAGE).flatMap(({ language, totalPosts, slug }) => {
+  const pagination = (collection?.pagination ?? []).filter(({ totalPosts }) => totalPosts > POSTS_PER_PAGE).flatMap(({ language, totalPosts, slug }) => {
     const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
     const { page } = useTranslations(language)('urlParts');
     return Array.from({ length: totalPages - 1 }, (_, i) => ({ slug: `${slug}/${page}/${i + 2}`, language }));
   });
 
 
-  return [...collection.pages, ...pagination].map(({ slug, language }) => ({
+  return [...(collection?.pages ?? []), ...pagination].map(({ slug, language }) => ({
     params: { lang: language, slug: slug.replace(`/${language}/blog/`, '') }
   }));
 }

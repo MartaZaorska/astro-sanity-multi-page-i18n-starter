@@ -13,9 +13,6 @@ type Props = {
 
 const { lang, alternates = [], hideNavigation = false } = Astro.props;
 
-const { localeAndSlug = '' } = Astro.params;
-const slug = `/${localeAndSlug}`;
-
 const ServiceQuery = `
   name,
   "href": slug.current,
@@ -79,7 +76,6 @@ const { annotation, links, services } = await sanityFetch<{
     }
   `,
   params: {
-    slug,
     lang,
   },
 });

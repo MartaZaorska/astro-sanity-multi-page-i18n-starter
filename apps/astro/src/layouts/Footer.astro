@@ -10,9 +10,6 @@ type Props = {
 const pathname = Astro.url.pathname;
 const { hideNavigation = false, lang } = Astro.props;
 
-const { localeAndSlug = '' } = Astro.params;
-const slug = `/${localeAndSlug}`;
-
 const ServiceQuery = `
   name,
   "href": slug.current,
@@ -73,7 +70,6 @@ const { footer, socials, gtmId } = await sanityFetch<{
     }   
   `,
   params: {
-    slug,
     lang
   }
 });
