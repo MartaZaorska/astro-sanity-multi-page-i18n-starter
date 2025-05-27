@@ -8,16 +8,9 @@ const slugs = [
   ...(await sanityFetch<string[]>({
     query: `*[defined(slug.current) && !(_type in ['NotFound_Page', 'BlogPost_Collection', 'BlogCategory_Collection'])][].slug.current`,
   })),
-  ...(await Promise.all([
-    import('./blog/[...slug].astro')
-      .then(res => res.getStaticPaths())
-      .then(paths => paths.map(({ params: { slug } }) => `/blog/${slug ? slug : ''}`)),
-    import('./[lang]/blog/[...slug].astro')
-      .then(res => res.getStaticPaths())
-      .then(paths =>
-        paths.map(({ params: { lang, slug } }) => `/${lang}/blog/${slug ? slug : ''}`)
-      ),
-  ]).then(paths => paths.flat())),
+  ...(await import('./[lang]/blog/[...slug].astro')
+    .then(res => res.getStaticPaths())
+    .then(paths => paths.map(({ params: { lang, slug } }) => `/${lang}/blog/${slug ? slug : ''}`))),
 ];
 
 const response = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">

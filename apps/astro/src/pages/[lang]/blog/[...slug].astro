@@ -1,5 +1,5 @@
 ---
-import { useTranslations, DEFAULT_LANGUAGE, type Language } from '@/global/languages';
+import { useTranslations, type Language } from '@/global/languages';
 import { POSTS_PER_PAGE } from '@/global/constants';
 import parseBlogSlug from '@/utils/parse-blog-slug';
 import pageFetch from '@/utils/page.fetch';
@@ -8,14 +8,17 @@ import BlogPost, { BlogPostPageQuery, type BlogPostPageProps } from '@/templates
 import Blog, { getTotalPosts, BlogPageQuery, type BlogPageProps } from '@/templates/blog.astro';
 
 export async function getStaticPaths() {
-  const collection = await sanityFetch<{ pages: {slug: string, language: Language }[]; pagination: { language: Language, slug: string, totalPosts: number }[]}>({
+  const collection = await sanityFetch<{ 
+    pages: { slug: string, language: Language }[]; 
+    pagination: { language: Language, slug: string, totalPosts: number }[]
+  }>({
     query: `
       {
-        "pages": *[defined(slug.current) && _type in ["BlogCategory_Collection", "BlogPost_Collection"] && language != $lang][] {
+        "pages": *[defined(slug.current) && _type in ["BlogCategory_Collection", "BlogPost_Collection"]][] {
           "slug": slug.current,
           language 
         },
-        "pagination": *[defined(slug.current) && _type in ["Blog_Page", "BlogCategory_Collection"] && language != $lang][]{
+        "pagination": *[defined(slug.current) && _type in ["Blog_Page", "BlogCategory_Collection"]][]{
           language,
           "slug": slug.current,
           "totalPosts": count(select(
@@ -25,8 +28,7 @@ export async function getStaticPaths() {
           )),
         }  
       }
-    `,
-    params: { lang: DEFAULT_LANGUAGE }
+    `
   });
 
   const pagination = collection.pagination.filter(({ totalPosts }) => totalPosts > POSTS_PER_PAGE).flatMap(({ language, totalPosts, slug }) => {

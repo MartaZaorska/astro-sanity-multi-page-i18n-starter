@@ -1,0 +1,24 @@
+---
+import type { Language } from '@/global/languages';
+import pageFetch from '@/utils/page.fetch';
+import sanityFetch from '@/utils/sanity.fetch';
+import DefaultPage from '@/templates/default.astro';
+
+export async function getStaticPaths(){
+  const languages = await sanityFetch<string[]>({
+    query: `*[_type == "Index_Page" && defined(slug.current)].language`
+  });
+
+  return languages.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as  { lang: Language };
+const data = await pageFetch({
+  slug: `/${lang}`,
+  lang: lang
+});
+
+if (!data) return Astro.rewrite(`/404`);
+---
+<DefaultPage {...data} />
+

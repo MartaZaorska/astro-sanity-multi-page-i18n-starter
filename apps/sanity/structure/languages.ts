@@ -15,31 +15,31 @@ export const LANGUAGES: Array<{ id: Language; title: string }> = [
 
 export const localizedPaths: Record<Page, Record<Language, string>> = {
   Index_Page: {
-    pl: '/',
+    pl: '/pl',
     en: '/en',
   },
   Blog_Page: {
-    pl: '/blog',
+    pl: '/pl/blog',
     en: '/en/blog',
   },
   PrivacyPolicy_Page: {
-    pl: '/polityka-prywatnosci',
+    pl: '/pl/polityka-prywatnosci',
     en: '/en/privacy-policy',
   },
   NotFound_Page: {
-    pl: '/404',
+    pl: '/pl/404',
     en: '/en/404',
   },
   BlogCategory_Collection: {
-    pl: '/blog/kategoria',
+    pl: '/pl/blog/kategoria',
     en: '/en/blog/category',
   },
   BlogPost_Collection: {
-    pl: '/blog',
+    pl: '/pl/blog',
     en: '/en/blog',
   },
   Service_Collection: {
-    pl: '',
+    pl: '/pl',
     en: '/en',
   },
 };
