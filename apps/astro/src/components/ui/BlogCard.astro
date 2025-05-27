@@ -1,0 +1,69 @@
+---
+import type { PortableTextProps } from 'astro-portabletext/types';
+import { useTranslations, type Language } from '@/global/languages';
+import { formatDate } from '@/utils/format-date';
+import { getEstimatedReadingTime } from '@/utils/get-estimated-reading-time';
+import { ContentPTQuery } from '@/components/Blog/Post/content-pt/index.astro';
+import Image, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+
+export const BlogCardQuery = `
+  name,
+  "slug": slug.current,
+  "date": coalesce(publishedAt, _createdAt),
+  ${ImageDataQuery('image')}
+  ${ContentPTQuery}
+`;
+
+export type BlogCardProps = {
+  name: string;
+  slug: string;
+  image: ImageDataProps;
+  date: string;
+  imgProps: {
+    sizes: string;
+    priority?: boolean;
+    loading?: 'eager' | 'lazy';
+  };
+  content: PortableTextProps['value'];
+  lang: Language;
+};
+
+
+const { name, slug, image, content, date, imgProps, lang } = Astro.props as BlogCardProps;
+const blogPostData = useTranslations(lang)('blogPost');
+---
+
+<article class='BlogCard'>
+  <a href={slug}>
+    <Image
+      {...image}
+      {...imgProps}
+    />
+    <header>
+      <p><span>{getEstimatedReadingTime(content, lang)}</span><span>{formatDate(date, `${lang}-${blogPostData.defaultRegion}`)}</span></p>
+      <h2 class='h3'>{name}</h2>
+    </header>
+  </a>
+</article>
+<style lang='scss'>
+  .BlogCard {
+    max-width: 500px;
+    img {
+      height: 250px;
+    }
+
+    header {
+      margin-top: 0.5rem;
+      p {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      h2 {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+</style>

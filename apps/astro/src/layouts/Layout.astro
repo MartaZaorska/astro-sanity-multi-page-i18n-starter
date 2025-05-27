@@ -1,0 +1,37 @@
+---
+import '@/global/global.scss';
+import Head, { type HeadProps } from './Head.astro';
+import OrganizationSchema from '@/schema/OrganizationSchema.astro';
+import Footer from './Footer.astro';
+import Header from './Header.astro';
+import CookieConsent from './CookieConsent.astro';
+
+type Props = HeadProps & {
+  hideNavigation?: boolean;
+};
+const { hideNavigation = false, ...props } = Astro.props;
+---
+
+<!doctype html>
+<html lang={props.language}>
+  <head>
+    <Head {...props} />
+    <slot name='head' />
+    <OrganizationSchema lang={props.language} />
+  </head>
+  <body>
+    <CookieConsent lang={props.language} />
+    <Header
+      lang={props.language}
+      alternates={props.alternates}
+      hideNavigation={hideNavigation}
+    />
+    <main id='main'>
+      <slot />
+    </main>
+    <Footer
+      hideNavigation={hideNavigation}
+      lang={props.language}
+    />
+  </body>
+</html>

@@ -1,0 +1,60 @@
+---
+import Components from '@/components/Components.astro';
+import Content, { ContentQuery, type ContentProps } from '@/components/Blog/Post/index.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import BlogPostingSchema from '@/schema/BlogPostingSchema.astro';
+import Layout from '@/layouts/Layout.astro';
+import pageFetch from '@/utils/page.fetch';
+
+export type BlogPostPageProps = {
+  blogPage: {
+    name: string;
+    slug: string;
+  };
+  postContent: ContentProps;
+};
+
+export const BlogPostPageQuery = `
+  _type == "BlogPost_Collection" => {
+    "blogPage": *[_type == "Blog_Page" && language == $lang][0]{
+      name,
+      "slug": slug.current
+    },
+    "postContent": {
+      ${ContentQuery}
+    },
+  },
+`;
+
+type Props = NonNullable<Awaited<ReturnType<typeof pageFetch<BlogPostPageProps>>>>;
+
+const {
+  page: { name, slug, components, language, blogPage, postContent },
+  metadata,
+} = Astro.props;
+
+const blogPostSchema = {
+  path: slug,
+  title: name,
+  description: metadata.description,
+  image: postContent.hero.image.asset.url,
+  datePublished: postContent.hero._createdAt,
+  dateModified: postContent.hero._updatedAt,
+  language
+};
+
+---
+<Layout {...metadata}>
+  <Fragment slot='head'>
+    <BlogPostingSchema {...blogPostSchema} />
+    <BreadcrumbsSchema
+      lang={language}
+      data={[
+        { name: blogPage.name, path: blogPage.slug },
+        { name, path: slug },
+       ]}
+    />
+  </Fragment>
+  <Content {...postContent} lang={language} />
+  {components && <Components data={components} indexStart={1} />}
+</Layout>

@@ -1,0 +1,49 @@
+---
+import { DOMAIN, DEFAULT_TITLE } from '@/global/constants';
+import type { Language } from '@/global/languages';
+
+export type Props = {
+  path: string;
+  title: string;
+  description: string;
+  image: string;
+  datePublished: string;
+  dateModified: string;
+  language: Language;
+};
+
+const { title, description, image, path, dateModified, datePublished, language } = Astro.props;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  image: [image],
+  datePublished,
+  dateModified,
+  author: {
+    '@type': 'Organization',
+    name: DEFAULT_TITLE,
+    '@id': `${DOMAIN}/#organization`,
+    url: DOMAIN,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: DEFAULT_TITLE,
+    '@id': `${DOMAIN}/#organization`,
+    url: DOMAIN,
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `${DOMAIN}${path}`,
+  },
+  inLanguage: language,
+};
+---
+
+<script
+  is:inline
+  type='application/ld+json'
+  set:html={JSON.stringify(schema)}
+/>

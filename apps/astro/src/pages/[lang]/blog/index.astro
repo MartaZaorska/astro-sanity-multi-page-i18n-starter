@@ -1,0 +1,29 @@
+---
+import { type Language, DEFAULT_LANGUAGE } from '@/global/languages';
+import pageFetch from '@/utils/page.fetch';
+import sanityFetch from '@/utils/sanity.fetch';
+import Blog, { BlogPageQuery, type BlogPageProps } from '@/templates/blog.astro';
+
+export async function getStaticPaths(){
+  const languages = await sanityFetch<string[]>({
+    query: `*[_type == "Blog_Page" && defined(slug.current) && language != $lang].language`,
+    params: { lang: DEFAULT_LANGUAGE }
+  });
+
+  return languages.map(lang => ({ params: { lang }}));
+}
+
+const { lang } = Astro.params as { lang: Language }; 
+const data = await pageFetch<BlogPageProps>({
+  slug: `/${lang}/blog`,
+  lang,
+  currentPage: 1,
+  additionalQuery: `
+    ${BlogPageQuery({ currentPage: 1, slug: `/${lang}/blog` })}
+  `,
+});
+
+if (!data) return Astro.rewrite(`/${lang}/404`);
+---
+
+<Blog page={{...data.page, currentPage: 1 }} metadata={data.metadata} />

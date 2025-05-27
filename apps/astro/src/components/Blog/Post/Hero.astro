@@ -1,0 +1,110 @@
+---
+import { useTranslations,  type Language } from '@/global/languages';
+import { formatDate } from '@/utils/format-date';
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import Image, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+import Button from '@/components/ui/Button/Button';
+
+export const HeroQuery = `
+  "hero": {
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    ${ImageDataQuery('image')}
+    "_createdAt": coalesce(publishedDate, _createdAt),
+    _updatedAt,
+  },
+`;
+
+export type HeroProps = {
+  _createdAt: string;
+  _updatedAt: string;
+  heading: PortableTextValue;
+  paragraph?: PortableTextValue;
+  image: ImageDataProps;
+  readingTime: string;
+  lang: Language;
+};
+
+const { _createdAt, _updatedAt, heading, paragraph, image, readingTime, lang } = Astro.props as HeroProps;
+const blogPostData = useTranslations(lang)('blogPost');
+const dateLocale = `${lang}-${blogPostData.defaultRegion}`;
+---
+
+<section class='Hero'>
+  <header>
+    <p class="reading-time">{readingTime}</p>
+    <PortableText
+      value={heading}
+      heading='h1'
+    />
+    {
+      paragraph && (
+        <PortableText
+          class='paragraph'
+          value={paragraph}
+        />
+      )
+    }
+    <div class="info">
+      <p class='date'>
+        <span>{blogPostData.createdAtText}: {formatDate(_createdAt, dateLocale)}</span>
+        <span>{blogPostData.updatedAtText}: {formatDate(_updatedAt, dateLocale)}</span>
+      </p>
+      <Button class="share">{blogPostData.shareButton}</Button>
+    </div>
+  </header>
+  <Image
+    {...image}
+    sizes='50vw'
+    priority={true}
+  />
+</section>
+<style lang='scss'>
+  .Hero {
+    margin-bottom: 2rem;
+
+    header {
+      h1 {
+        margin: 1rem 0;
+      }
+
+      .reading-time {
+        font-size: 0.9rem;
+      }
+
+      .paragraph {
+        margin: 2rem 0;
+      }
+    }
+
+    img {
+      margin: 2rem 0;
+    }
+
+    .info {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      .date {
+        display: grid;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+</style>
+<script>
+  document.querySelector('.share')?.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('feature', 'share');
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: url.toString() });
+    } else {
+      navigator.clipboard.writeText(url.toString());
+      alert('Link copied successfully');
+    }
+  });
+</script>

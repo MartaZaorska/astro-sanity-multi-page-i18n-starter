@@ -1,0 +1,213 @@
+---
+import type { PortableTextProps } from 'astro-portabletext/types';
+import type { PortableTextBlock } from '@portabletext/types';
+import { useTranslations, type Language } from '@/global/languages';
+import { slugify } from '@/utils/slugify';
+
+type NavProps = {
+  lang: Language;
+  headings: (PortableTextProps['value'] & { plainText: string })[];
+};
+
+const { headings, lang } = Astro.props as NavProps;
+
+type HeadingGroup = {
+  heading: { text: string; slug: string };
+  subHeadings: { text: string; slug: string }[];
+};
+
+const groupedHeadings = headings?.reduce<HeadingGroup[]>((acc, heading) => {
+  const style = (heading as PortableTextBlock).style as string;
+  const slug = slugify(heading.plainText);
+  if (style === 'h2') {
+    acc.push({ heading: { text: heading.plainText, slug }, subHeadings: [] });
+  } else if (style === 'h3' && acc.length > 0) {
+    acc[acc.length - 1].subHeadings.push({ text: heading.plainText, slug });
+  }
+  return acc;
+}, []);
+
+const blogPostData = useTranslations(lang)('blogPost');
+---
+
+<nav
+  aria-label={blogPostData.ariaLabelNav}
+  class='content-nav'
+>
+  <p>{blogPostData.labelNav}</p>
+  <ul>
+    {
+      groupedHeadings.map(({ heading, subHeadings }) => (
+        <li>
+          <a
+            href={`#${heading.slug}`}
+            aria-current='false'
+          >
+            {heading.text}
+            {subHeadings.length > 0 && (
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  width='12'
+                  height='13'
+                  viewBox='0 0 12 13'
+                  fill='none'
+                >
+                  <path
+                    stroke='currentColor'
+                    d='M9.5 8 6 5 2.5 8'
+                  />
+              </svg>
+            )}
+          </a>
+          {subHeadings.length > 0 && (
+            <ul>
+              {subHeadings.map(({ slug, text }) => (
+                <li>
+                  <a
+                    href={`#${slug}`}
+                    aria-current='false'
+                  >
+                    {text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+<style lang='scss'>
+  .content-nav {
+    background-color: var(--neutral-200);
+    border-radius: 0.3rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    &::-webkit-scrollbar {
+      background: transparent;
+      width: 15px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      box-shadow: inset 0 0 15px 15px rgba(110, 110, 110, 0.4);
+      border: solid 5px transparent;
+      border-radius: 1.3em;
+    }
+
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 15px 15px transparent;
+      border: solid 5px transparent;
+    }
+  
+    > p {
+      padding: 1rem 0.6rem;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+    }
+
+    > ul {
+      gap: 0;
+      li {
+        position: relative;
+        padding-left: 0;
+        transition: background-color 150ms var(--easing);
+
+        @media (min-width: 79.5rem){
+          &:hover {
+            background-color: hsla(236, 20%, 57%, 0.6);
+            a {
+              color: var(--neutral-100);
+            }
+          }
+        }
+
+        &::before {
+          content: '';
+        }
+
+        a {
+          z-index: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          padding: 0.8rem;
+          transition: color 150ms var(--easing);
+
+          svg {
+            display: none;
+            @media (min-width: 79.5rem){
+              display: block;
+              transform: rotate(-180deg);
+              width: 1rem;
+              transition: transform 150ms var(--easing);
+            }
+          }
+
+          &:focus-visible {
+            outline-offset: -1px;
+          }
+        }
+        
+
+        > ul {
+          display: block;
+          @media (min-width: 79.5rem){
+            display: none;
+          }
+
+          li a {
+            padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+            font-size: 0.9rem;    
+          }
+        }
+
+        @media (min-width: 79.5rem){
+          &:has([aria-current='true']) {
+            background-color: hsla(236, 20%, 47%, 0.7);
+          
+            > ul {
+              display: block;
+            }
+
+            a {
+              color: var(--neutral-100);
+              svg {
+                transform: rotate(0deg);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+</style>
+<script>
+  document.querySelectorAll<HTMLDivElement>('.content-nav')?.forEach(nav => {
+    const contentPT = nav.closest('.content')?.querySelector('.content-pt');
+    if (!contentPT) return;
+
+    const navLinks = nav.querySelectorAll('a');
+    const headings = Array.from(contentPT.querySelectorAll(':scope > h2, :scope > h3'));
+
+    function updateActiveHeading() {
+      const triggerPoint = 124;
+      const currentHeading = headings.reduce((current, heading) => {
+        const headingTop = heading.getBoundingClientRect().top;
+        if (headingTop <= triggerPoint) return heading;
+        return current;
+      }, headings[0]);
+
+      navLinks.forEach(link => link.setAttribute('aria-current', 'false'));
+      if (currentHeading) {
+        const id = currentHeading.getAttribute('id');
+        nav.querySelector(`a[href="#${id}"]`)?.setAttribute('aria-current', 'true');
+      }
+    }
+    window.addEventListener('scroll', () => requestAnimationFrame(updateActiveHeading));
+    updateActiveHeading();
+  });
+</script>

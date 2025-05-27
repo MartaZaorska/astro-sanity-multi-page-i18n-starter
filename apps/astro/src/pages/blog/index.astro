@@ -1,0 +1,19 @@
+---
+import { DEFAULT_LANGUAGE } from '@/global/languages';
+import pageFetch from '@/utils/page.fetch';
+import Blog, { BlogPageQuery, type BlogPageProps } from '@/templates/blog.astro';
+
+const data = await pageFetch<BlogPageProps>({
+  slug: '/blog',
+  lang: DEFAULT_LANGUAGE,
+  currentPage: 1,
+  additionalQuery: `
+    ${BlogPageQuery({ currentPage: 1, slug: '/blog' })}
+  `,
+});
+
+if (!data) return Astro.rewrite(`/404`);
+
+---
+
+<Blog page={{...data.page, currentPage: 1 }} metadata={data.metadata} />

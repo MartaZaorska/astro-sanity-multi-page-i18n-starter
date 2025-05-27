@@ -1,0 +1,38 @@
+---
+import { type Language, useTranslations, getLangPrefix } from '@/global/languages';
+
+type Props = {
+  data?: {
+    name: string;
+    path: string;
+  }[];
+  lang: Language;
+};
+
+const { lang, data = [] } = Astro.props;
+const t = useTranslations(lang);
+
+const defaultPath = `${getLangPrefix(lang) || '/'}`;
+
+const breadcrumbsData =
+  data.length === 0 || data[0].path !== defaultPath
+    ? [{ path: defaultPath, name: t('breadcrumbsName') }, ...data]
+    : data;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbsData.map(({ name, path }, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name,
+    item: `${Astro.url.origin}${path}`,
+  })),
+};
+---
+
+<script
+  is:inline
+  type='application/ld+json'
+  set:html={JSON.stringify(schema)}
+/>

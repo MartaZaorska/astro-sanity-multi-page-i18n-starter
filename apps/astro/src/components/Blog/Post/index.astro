@@ -1,0 +1,93 @@
+---
+import type { PortableTextBlock } from '@portabletext/types';
+import { toPlainText } from 'astro-portabletext';
+import { getEstimatedReadingTime } from '@/utils/get-estimated-reading-time';
+import type { Language } from '@/global/languages';
+import ContentPT, { ContentPTQuery, type Props as ContentPTProps } from './content-pt/index.astro';
+import Hero, { HeroQuery, type HeroProps } from './Hero.astro';
+import Nav from './Nav.astro';
+
+export type ContentProps = {
+  hero: HeroProps;
+  content: ContentPTProps['value'];
+  lang: Language;
+};
+
+export const ContentQuery = `
+  ${HeroQuery}
+  ${ContentPTQuery}
+`;
+
+const { hero, content, lang } = Astro.props as ContentProps;
+
+const valueArray = Array.isArray(content) ? content : [content];
+const value = valueArray.map(item =>
+  item?._type === 'block' && ['normal', 'h2', 'h3', 'h4'].includes(item?.style)
+    ? {
+        ...item,
+        plainText: toPlainText(item as PortableTextBlock)
+          .trim()
+          .replace('❧ ', ''),
+      }
+    : item
+);
+
+const headings = value.filter(item => item?._type === 'block' && ['h2', 'h3'].includes(item?.style));
+---
+
+<article class='content max-width'>
+  <Nav headings={headings} lang={lang} />
+  <section class='content-body'>
+    <Hero
+      {...hero}
+      lang={lang}
+      readingTime={getEstimatedReadingTime(value, lang)}
+    />
+    <div class='content-pt'>
+      <ContentPT value={value} />
+    </div>
+  </section>
+</article>
+<style lang='scss'>
+  .content {
+    margin: 4rem auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    :global(.content-nav) {
+      margin-bottom: 2rem;
+      width: 100%;
+      max-width: 25rem;
+      height: auto;
+      @media (min-width: 79.5rem) {
+        position: sticky;
+        top: 95px;
+        max-height: calc(100vh - 10rem);
+      }
+    }
+
+    .content-body {
+      max-width: 48rem;
+      @media (min-width: 48rem){
+        margin-bottom: 5rem;
+      }
+    }
+
+    .content-pt {
+      :global(h2),
+      :global(h3),
+      :global(p),
+      :global(ul),
+      :global(ol) {
+        margin-bottom: 1rem;
+      }
+
+      :global(h2:not(:first-child)) {
+        margin-top: 3rem;
+      }
+    }
+  }
+</style>

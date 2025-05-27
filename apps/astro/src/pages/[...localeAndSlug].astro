@@ -1,0 +1,46 @@
+---
+import { getLangPrefix, getLocaleFromSlug } from '@/global/languages';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import DefaultPage from '@/templates/default.astro';
+import PrivacyPolicy, { PrivacyPolicyPageQuery, type PrivacyPolicyPageProps } from '@/templates/privacy-policy.astro';
+
+export async function getStaticPaths() {
+  const slugs = await sanityFetch<string[]>({
+    query: `*[defined(slug.current) && _type in ["Index_Page", "Service_Collection", "PrivacyPolicy_Page"] && slug.current != '/'][].slug.current`
+  });
+
+  return slugs.map(slug => ({
+    params: { localeAndSlug: slug === '/' ? undefined : slug.slice(1) }
+  }));
+}
+
+const { localeAndSlug = '' } = Astro.params;
+const slug = `/${localeAndSlug}`;
+const lang = getLocaleFromSlug(slug);
+const langPrefix = getLangPrefix(lang);
+
+if(!slug.startsWith(langPrefix)) return Astro.rewrite(`${langPrefix}/404`);
+
+type AdditionalQueryProps = PrivacyPolicyPageProps;
+
+const data = await pageFetch<AdditionalQueryProps>({
+  slug,
+  lang,
+  additionalQuery: `
+    ${PrivacyPolicyPageQuery}
+  `,
+});
+
+if (!data) return Astro.rewrite(`${langPrefix}/404`);
+
+const pages: Record<string, any> = {
+  PrivacyPolicy_Page: PrivacyPolicy,
+  default: DefaultPage,
+};
+
+const Page = pages[data.page._type] || pages.default;
+---
+
+<Page {...data} />
+

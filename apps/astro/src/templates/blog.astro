@@ -1,0 +1,104 @@
+---
+import { useTranslations, type Language } from "@/global/languages";
+import { POSTS_PER_PAGE } from "@/global/constants";
+import sanityFetch from "@/utils/sanity.fetch";
+import pageFetch from '@/utils/page.fetch';
+import capitalize from '@/utils/capitalize';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import Layout from "@/layouts/Layout.astro";
+import Components, { ComponentsQuery, type ComponentsProps } from '@/components/Components.astro';
+import Listing, { ListingQuery, type ListingProps } from "@/components/Blog/Listing.astro";
+
+export async function getTotalPosts(slug: string, lang: Language) {
+  return await sanityFetch<number | null>({
+    query: `
+      *[slug.current == $slug][0]{
+        "totalPosts": count(select(
+          _type == "Blog_Page" => *[_type == "BlogPost_Collection" && language == $lang][],
+          _type == "BlogCategory_Collection" => *[_type == "BlogPost_Collection" && category->slug.current == $slug && language == $lang][],
+          []
+        )),
+      }.totalPosts
+    `,
+    params: { slug, lang }
+  });
+};
+
+export const BlogPageQuery = ({ currentPage = 1, slug }: { slug: string; currentPage?: number }) => `
+  _type == "Blog_Page" || _type == "BlogCategory_Collection" => {
+    "blogPage": select(
+      _type == "BlogCategory_Collection" => *[_type == "Blog_Page" && language == $lang][0]{
+        name,
+        "slug": slug.current,
+        ${ComponentsQuery}
+      },
+      null
+    ),
+    "listing": select(
+      _type == "BlogCategory_Collection" => ${ListingQuery({ page: currentPage, categorySlug: slug })},
+      _type == "Blog_Page" => ${ListingQuery({ page: currentPage })},
+      null
+    )
+  },
+`;
+
+export type BlogPageProps = {
+  blogPage?: { name: string; slug: string, components?: ComponentsProps };
+  listing: ListingProps;
+  currentPage: number; 
+}
+
+type Props = NonNullable<Awaited<ReturnType<typeof pageFetch<BlogPageProps>>>>;
+
+const {
+  page: { _type, name, slug, components, language, blogPage, listing, currentPage },
+  metadata,
+} = Astro.props;
+
+const totalPages = Math.ceil((listing.totalPostsByCategory || listing.totalPosts) / POSTS_PER_PAGE);
+const pageComponents = components ?? blogPage?.components;
+
+const urlParts = useTranslations(language)("urlParts");
+const pageLabel = capitalize(urlParts.page);
+---
+<Layout
+  alternates={metadata.alternates}
+  language={metadata.language}
+  description={metadata.description}
+  openGraphImage={metadata.openGraphImage}
+  doNotIndex={metadata.doNotIndex}
+  path={Astro.url.pathname}
+  title={currentPage > 2 ? `${metadata.title} | ${pageLabel} ${currentPage}` : metadata.title}
+>
+  <Fragment slot="head">
+    {currentPage > 1 && (
+      <link rel="prev" href={currentPage === 2 ? `${Astro.url.origin}${slug}` : `${Astro.url.origin}${slug}/${urlParts.page}/${currentPage - 1}`} />
+    )}
+    {currentPage < totalPages && (
+      <link
+        rel='next'
+        href={`${Astro.url.origin}${slug}/${urlParts.page}/${currentPage + 1}`}
+      />
+    )}
+    <BreadcrumbsSchema
+      data={[
+        ...(blogPage ? [{ name: blogPage.name, path: blogPage.slug }] : []),
+        { name, path: slug },
+        ...(currentPage > 1 ? [{ name: `${pageLabel} ${currentPage}`, path: `${slug}/${urlParts.page}/${currentPage}`}] : [])
+      ]}
+      lang={language}
+    />
+  </Fragment>
+  <Listing
+    {...listing}
+    currentPage={currentPage}
+    currentCategorySlug={_type == "BlogCategory_Collection" ? slug : ''}
+    totalPages={totalPages}
+    lang={language}
+    blogPageSlug={blogPage?.slug || slug}
+  />
+  {pageComponents && <Components
+    data={pageComponents}
+    indexStart={1}
+  />}
+</Layout>

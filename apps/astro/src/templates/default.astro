@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import pageFetch from '@/utils/page.fetch';
+
+type Props = NonNullable<Awaited<ReturnType<typeof pageFetch>>>;
+
+const { page, metadata } = Astro.props;
+---
+
+<Layout
+  {...metadata}
+  hideNavigation={['NotFound_Page'].includes(page._type)}
+>
+  <BreadcrumbsSchema
+    slot='head'
+    lang={page.language}
+    data={[{ name: page.name, path: page.slug }]}
+  />
+  {page.components && <Components data={page.components} />}
+</Layout>
