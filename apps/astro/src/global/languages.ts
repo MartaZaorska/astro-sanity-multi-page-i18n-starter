@@ -108,20 +108,6 @@ const translations = {
           id: 'marketing',
           name: 'Marketingowe',
           description: `Pliki cookie marketingowe są używane do śledzenia odwiedzających na stronach internetowych. Ich celem jest wyświetlanie reklam, które są istotne i interesujące dla indywidualnych użytkowników, a tym samym bardziej wartościowe dla wydawców i zewnętrznych reklamodawców.`,
-          // subGroups: [
-          //   {
-          //     id: 'conversion_api',
-          //     name: 'API Konwersji (Facebook)',
-          //     description:
-          //       'Pozwala na przesyłanie danych o konwersjach bezpośrednio do platform reklamowych w celu poprawy skuteczności reklam i lepszego mierzenia ich efektywności.',
-          //   },
-          //   {
-          //     id: 'advanced_matching',
-          //     name: 'Zaawansowane Dopasowanie (Facebook)',
-          //     description:
-          //       'Umożliwia lepsze dopasowanie użytkowników do ich działań na stronie, co pomaga w dokładniejszym targetowaniu reklam i analizie ich skuteczności.',
-          //   },
-          // ],
         },
       ],
     },
@@ -230,20 +216,6 @@ const translations = {
           id: 'marketing',
           name: 'Marketing',
           description: `Marketing cookies are used to track visitors across websites. Their purpose is to display ads that are relevant and engaging for individual users and therefore more valuable for publishers and third-party advertisers.`,
-          // subGroups: [
-          //   {
-          //     id: 'conversion_api',
-          //     name: 'Conversion API (Facebook)',
-          //     description:
-          //       'Enables the direct transmission of conversion data to advertising platforms to improve ad performance and better measure effectiveness.',
-          //   },
-          //   {
-          //     id: 'advanced_matching',
-          //     name: 'Advanced Matching (Facebook)',
-          //     description:
-          //       'Allows for better matching of users to their actions on the website, helping with more accurate ad targeting and performance analysis.',
-          //   },
-          // ],
         },
       ],
     },
